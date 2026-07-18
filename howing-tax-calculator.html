@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>美國稅後月薪計算器｜Howing @howing.hohoho</title>
+<meta name="description" content="輸入年薪，即刻睇到你喺紐約、新澤西、加州、德州、華盛頓州嘅稅後每月實收。幫香港人喺美國做金錢決定前，少一點誤解。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HOWING 美國稅後月薪計算器
+   品牌：@howing.hohoho
+   主色：米白 + 橙
+   ============================================================ */
+:root{
+  --cream:#FBF7EF;          /* 米白背景 */
+  --cream-deep:#F3ECDF;     /* 深一級米白（分隔區） */
+  --ink:#211B12;            /* 近黑深啡（主文字） */
+  --ink-soft:#6E6353;       /* 柔和啡灰（次要文字） */
+  --orange:#EE6C1E;         /* 主橙 */
+  --orange-deep:#C9530C;    /* 深橙（hover / 強調） */
+  --orange-tint:#FDE8D8;    /* 淺橙（highlight 底色） */
+  --card:#FFFFFF;
+  --line:#E6DCCB;           /* 米色細線 */
+  --good:#1E7B4D;           /* 綠（最高實收 tag） */
+  --radius:14px;
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans:'Noto Sans TC', -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--sans);
+  background:var(--cream);
+  color:var(--ink);
+  line-height:1.55;
+  padding-bottom:40px;
+}
+/* ---------- @howing.hohoho 斜紋水印 ----------
+   用 inline SVG pattern 做，兩個錯位嘅字樣營造磚砌感，
+   固定喺背景層，唔阻擋任何操作 */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='240'%3E%3Cg font-family='Courier New,monospace' font-size='14' letter-spacing='3' fill='%23DD6418' fill-opacity='0.13'%3E%3Ctext x='85' y='70' transform='rotate(-28 85 70)'%3E@howing.hohoho%3C/text%3E%3Ctext x='255' y='190' transform='rotate(-28 255 190)'%3E@howing.hohoho%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-size:340px 240px;
+}
+.wrap{max-width:520px; margin:0 auto; padding:0 16px; position:relative; z-index:1;}
+
+/* ---------- Header ---------- */
+header{padding:28px 0 8px;}
+.brand-row{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+.brand-dot{width:10px; height:10px; border-radius:50%; background:var(--orange);}
+.brand-name{
+  font-family:var(--mono); font-weight:600; font-size:13px;
+  letter-spacing:.12em; color:var(--ink-soft); text-transform:uppercase;
+}
+h1{font-size:26px; font-weight:900; line-height:1.3; letter-spacing:.01em;}
+h1 .hl{color:var(--orange);}
+.sub{margin-top:8px; font-size:14px; color:var(--ink-soft);}
+
+/* ---------- 輸入卡 ---------- */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px 16px; margin-top:18px;
+  box-shadow:0 2px 10px rgba(33,27,18,.04);
+}
+.field{margin-bottom:18px;}
+.field:last-child{margin-bottom:0;}
+label.flabel{
+  display:block; font-size:13px; font-weight:700; margin-bottom:7px;
+  letter-spacing:.02em;
+}
+label.flabel .opt{font-weight:400; color:var(--ink-soft); font-size:12px;}
+.hint{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+.input-shell{
+  display:flex; align-items:center; gap:6px;
+  background:var(--cream); border:1.5px solid var(--line); border-radius:10px;
+  padding:0 14px; transition:border-color .15s;
+}
+.input-shell:focus-within{border-color:var(--orange);}
+.input-shell .unit{font-family:var(--mono); font-weight:600; color:var(--ink-soft); font-size:15px;}
+input[type=number]{
+  flex:1; min-width:0; border:0; background:transparent; outline:none;
+  font-family:var(--mono); font-weight:600; font-size:20px; color:var(--ink);
+  padding:13px 0; -moz-appearance:textfield;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+input.small-num{font-size:17px; padding:11px 0;}
+
+/* 州份 chips */
+.chips{display:flex; flex-wrap:wrap; gap:8px;}
+.chip{
+  border:1.5px solid var(--line); background:var(--card); border-radius:999px;
+  padding:9px 14px; font-size:14px; font-weight:700; color:var(--ink-soft);
+  cursor:pointer; user-select:none; transition:all .15s;
+  font-family:var(--sans); display:flex; align-items:center; gap:6px;
+}
+.chip .abbr{font-family:var(--mono); font-size:11px; font-weight:600; opacity:.75;}
+.chip.on{
+  background:var(--orange); border-color:var(--orange); color:#fff;
+}
+.chip.on .abbr{opacity:.9;}
+.chip:focus-visible{outline:2px solid var(--orange-deep); outline-offset:2px;}
+.chip-note{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+.chip-note.warn{color:var(--orange-deep); font-weight:500;}
+
+/* NYC checkbox */
+.check-row{
+  display:flex; align-items:flex-start; gap:10px; margin-top:12px;
+  background:var(--orange-tint); border-radius:10px; padding:12px 14px;
+}
+.check-row input[type=checkbox]{
+  width:19px; height:19px; margin-top:2px; accent-color:var(--orange); flex:none;
+}
+.check-row label{font-size:14px; font-weight:500; cursor:pointer;}
+.check-row .sub-line{display:block; font-size:12px; color:var(--ink-soft); font-weight:400;}
+.hidden{display:none !important;}
+
+/* ---------- 結果區 ---------- */
+.results-title{
+  margin:26px 0 4px; font-size:14px; font-weight:900; letter-spacing:.14em;
+  color:var(--ink-soft); display:flex; align-items:center; gap:10px;
+}
+.results-title::after{content:""; flex:1; height:1px; background:var(--line);}
+
+/* 對比條（2–3 州先顯示） */
+.compare-strip{
+  display:grid; gap:8px; margin-top:14px;
+  grid-template-columns:repeat(var(--cols,3),1fr);
+}
+.cmp-cell{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:12px 10px; text-align:center; position:relative;
+}
+.cmp-cell.best{border-color:var(--orange); background:var(--orange-tint);}
+.cmp-cell .st{font-size:12px; font-weight:700; color:var(--ink-soft);}
+.cmp-cell .amt{font-family:var(--mono); font-weight:700; font-size:16px; margin-top:3px; letter-spacing:-.01em;}
+.cmp-cell .diff{font-family:var(--mono); font-size:11px; margin-top:3px; color:var(--ink-soft);}
+.cmp-cell.best .diff{color:var(--good); font-weight:600;}
+.cmp-hint{font-size:12px; color:var(--ink-soft); margin-top:8px; text-align:center;}
+
+/* 州結果卡（糧單風格） */
+.state-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  margin-top:16px; overflow:hidden;
+  box-shadow:0 2px 10px rgba(33,27,18,.04);
+}
+.sc-head{
+  padding:16px 18px 14px;
+  border-bottom:2px dashed var(--line);
+  position:relative;
+}
+.sc-state{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.sc-state .name{font-size:15px; font-weight:900;}
+.sc-state .tag{
+  font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px;
+  background:var(--cream-deep); color:var(--ink-soft); font-family:var(--mono);
+}
+.sc-state .tag.best-tag{background:var(--good); color:#fff;}
+.sc-net-label{margin-top:12px; font-size:13px; color:var(--ink-soft); font-weight:500;}
+.sc-net{
+  font-family:var(--mono); font-weight:700; font-size:38px; line-height:1.15;
+  letter-spacing:-.02em; color:var(--orange-deep);
+}
+.sc-net .per{font-size:15px; font-weight:600; color:var(--ink-soft); letter-spacing:0;}
+.sc-net-yr{font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
+.sc-body{padding:8px 18px 14px;}
+.row{
+  display:flex; align-items:baseline; gap:10px;
+  padding:9px 0; border-bottom:1px solid var(--cream-deep);
+  font-size:14px;
+}
+.row:last-child{border-bottom:0;}
+.row .nm{flex:1; min-width:0;}
+.row .nm .en{display:block; font-size:11px; color:var(--ink-soft); font-family:var(--mono);}
+.row .amt{font-family:var(--mono); font-weight:600; font-size:14px; white-space:nowrap;}
+.row .pct{
+  font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+  width:52px; text-align:right; flex:none;
+}
+.row.section-label{
+  padding-top:14px; border-bottom:0; font-size:12px; font-weight:900;
+  letter-spacing:.1em; color:var(--ink-soft);
+}
+.row.asset .amt{color:var(--good);}
+.row.zero-note{color:var(--ink-soft); font-size:13px;}
+.sc-total{
+  background:var(--cream); border-top:1px solid var(--line);
+  padding:12px 18px; display:flex; flex-wrap:wrap; gap:4px 16px;
+  font-size:13px;
+}
+.sc-total .item{display:flex; gap:6px; align-items:baseline;}
+.sc-total .item b{font-family:var(--mono); font-weight:700;}
+.sc-total .item .lb{color:var(--ink-soft);}
+
+/* ---------- 免責聲明 / footer ---------- */
+.disclaimer{
+  margin-top:26px; padding:16px; background:var(--cream-deep);
+  border-radius:12px; font-size:12px; color:var(--ink-soft); line-height:1.7;
+}
+.disclaimer b{color:var(--ink);}
+.data-note{margin-top:10px; font-size:11.5px; color:var(--ink-soft); line-height:1.7;}
+.data-note summary{cursor:pointer; font-weight:700; font-size:12px; color:var(--ink-soft);}
+.data-note ul{margin:8px 0 0 18px;}
+.data-note li{margin-bottom:4px;}
+
+footer{
+  margin-top:30px; text-align:center;
+}
+footer .ig{
+  display:inline-block; font-family:var(--mono); font-weight:700; font-size:15px;
+  color:var(--orange-deep); text-decoration:none;
+  border:1.5px solid var(--orange); border-radius:999px; padding:9px 20px;
+  transition:all .15s;
+}
+footer .ig:hover{background:var(--orange); color:#fff;}
+footer .tagline{margin-top:10px; font-size:13px; color:var(--ink-soft);}
+footer .share-hint{margin-top:16px; font-size:12px; color:var(--ink-soft);}
+
+@media (min-width:560px){
+  .sc-net{font-size:42px;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand-row">
+      <span class="brand-dot"></span>
+      <span class="brand-name">HOWING</span>
+    </div>
+    <h1>年薪一樣，<br>你喺邊個州<span class="hl">實收幾多</span>？</h1>
+    <p class="sub">輸入稅前年薪，揀最多 3 個州，即刻對比稅後每月落袋幾多。</p>
+  </header>
+
+  <!-- ==================== 輸入區 ==================== -->
+  <section class="panel" aria-label="輸入資料">
+
+    <div class="field">
+      <label class="flabel" for="salary">稅前年薪（Gross Annual Salary）</label>
+      <div class="input-shell">
+        <span class="unit">$</span>
+        <input type="number" id="salary" inputmode="numeric" min="0" max="10000000" step="1000" value="100000" aria-label="稅前年薪，美元">
+        <span class="unit">/年</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="flabel">揀州份對比 <span class="opt">（最多 3 個）</span></label>
+      <div class="chips" id="stateChips" role="group" aria-label="選擇州份">
+        <button type="button" class="chip on" data-st="NY">紐約 <span class="abbr">NY</span></button>
+        <button type="button" class="chip" data-st="NJ">新澤西 <span class="abbr">NJ</span></button>
+        <button type="button" class="chip on" data-st="CA">加州 <span class="abbr">CA</span></button>
+        <button type="button" class="chip on" data-st="TX">德州 <span class="abbr">TX</span></button>
+        <button type="button" class="chip" data-st="WA">華盛頓州 <span class="abbr">WA</span></button>
+        <button type="button" class="chip" data-st="MA">麻省 <span class="abbr">MA</span></button>
+        <button type="button" class="chip" data-st="FL">佛羅里達 <span class="abbr">FL</span></button>
+      </div>
+      <p class="chip-note" id="chipNote">已揀 3 個州。想換第個，先㩒走一個。</p>
+
+      <div class="check-row" id="nycRow">
+        <input type="checkbox" id="nycCheck" checked>
+        <label for="nycCheck">我居住／工作於紐約市
+          <span class="sub-line">NYC 有自己嘅市稅，會另外扣多一層</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="flabel" for="k401">401(k) 供款 <span class="opt">（自選，預設 0%）</span></label>
+      <div class="input-shell">
+        <input type="number" id="k401" class="small-num" inputmode="decimal" min="0" max="100" step="1" value="0" aria-label="401k 供款百分比">
+        <span class="unit">%</span>
+      </div>
+      <p class="hint" id="k401Hint">呢筆錢唔係稅，係入咗你自己個退休戶口，仍然係你嘅資產。2026 年上限 $24,500，超過會自動封頂。留意：呢度假設係 traditional（pre-tax）401k；如果你揀 Roth 401k，供款唔會減低你今年要交嘅稅。</p>
+    </div>
+
+    <div class="field">
+      <label class="flabel" for="health">醫療保險每月保費 <span class="opt">（自選，預設 $0）</span></label>
+      <div class="input-shell">
+        <span class="unit">$</span>
+        <input type="number" id="health" class="small-num" inputmode="numeric" min="0" max="5000" step="10" value="0" aria-label="每月醫療保費，美元">
+        <span class="unit">/月</span>
+      </div>
+      <p class="hint">每間公司唔同，睇返你份 offer 或糧單。呢度假設係 pre-tax 扣（美國大部分公司醫保都係），所以會同時降低你要交嘅稅。</p>
+    </div>
+
+  </section>
+
+  <!-- ==================== 結果區 ==================== -->
+  <h2 class="results-title">你嘅稅後實收</h2>
+
+  <div class="compare-strip" id="compareStrip"></div>
+  <p class="cmp-hint" id="cmpHint"></p>
+
+  <div id="cards"></div>
+
+  <!-- ==================== 免責聲明 ==================== -->
+  <div class="disclaimer">
+    <b>免責聲明：</b>呢個計算器提供嘅係粗略估算，假設你係單身報稅、使用標準扣除額，並未考慮個人特殊情況（例如已婚、有受養人、額外收入、逐項扣除等）。實際稅款會因應你嘅個人狀況而有所不同。呢個工具僅供參考，不構成任何稅務、法律或財務建議，實際報稅前請諮詢註冊會計師（CPA）或稅務專業人士。
+    <details class="data-note">
+      <summary>計算用咗咩數據？（想覆核㩒呢度）</summary>
+      <ul>
+        <li>聯邦稅：2026 稅年稅階及標準扣除額 $16,100（IRS Rev. Proc. 2025-32）</li>
+        <li>FICA：Social Security 6.2%（2026 年 wage base 上限 $184,500）；Medicare 1.45%，年薪超過 $200,000 部分另加 0.9%</li>
+        <li>紐約州稅：2026 稅年稅階（已計入 FY2026 預算減稅），標準扣除額 $8,000；紐約市稅 3.078%–3.876%</li>
+        <li>新澤西州稅：現行稅階（NJ 冇標準扣除額，以 $1,000 personal exemption 代替）</li>
+        <li>加州州稅：2025 稅年稅階近似（2026 指數化數字未公佈），標準扣除額 $5,706，另計 CA SDI 1.2%</li>
+        <li>紐約另計：NY Paid Family Leave 0.432%（2026 年上限 $411.91/年）及 NY Disability 每週 $0.60</li>
+        <li>麻省：flat 5%，應課稅收入超過 $1,107,750（2026）部分加 4% surtax；用 $4,400 personal exemption 代替標準扣除；另計 MA PFML 僱員供款 0.46%</li>
+        <li>德州、華盛頓州、佛羅里達：工資收入無州所得稅</li>
+        <li>醫療保費當 pre-tax 處理；401(k) 供款降低所得稅但唔降低 FICA</li>
+      </ul>
+    </details>
+  </div>
+
+  <footer>
+    <a class="ig" href="https://www.instagram.com/howing.hohoho" target="_blank" rel="noopener">@howing.hohoho</a>
+    <p class="share-hint">覺得有用？截圖 share 俾準備嚟美國嘅朋友 📲</p>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   稅務計算邏輯
+   ------------------------------------------------------------
+   稅務年度：
+   - 聯邦：2026 稅年（IRS Revenue Procedure 2025-32）
+   - FICA：2026 年（SS wage base $184,500）
+   - 紐約州：2026 稅年（已反映 NY FY2026 預算：最低五級稅率各減 0.1%）
+   - 紐約市：現行稅階（多年不變）
+   - 新澤西：現行稅階（NJ 稅階唔跟通脹調整）
+   - 加州：2025 稅年近似（2026 指數化數字截至製作時未公佈）
+   - 德州 / 華盛頓州：工資無州所得稅
+
+   重要簡化（rough estimate，非精確報稅計算）：
+   1. 全部假設 Single 報稅身份 + 標準扣除額
+   2. NJ 冇標準扣除額 → 用 $1,000 personal exemption 代替
+   3. 醫療保費假設經 Section 125 pre-tax 扣：
+      同時降低聯邦/州應課稅收入 *同* FICA 工資基數
+      （NJ 對 cafeteria plan 有特殊規則，此處統一簡化為 pre-tax）
+   4. 401(k) 供款：降低聯邦/州應課稅收入，但 *唔* 降低 FICA 工資
+      （呢個係真實規則，唔係簡化）；2026 年上限 $24,500
+   5. 唔計：CA personal exemption credit、NY household credit、
+      NJ/NY 嘅 UI/DI/PFL 小額工資扣除、WA Cares（0.58%）、
+      local taxes（NYC 除外）、itemized deductions、tax credits
+   6. CA SDI 用 2025 年費率 1.2%（無上限）
+   ============================================================ */
+
+// ---------- 累進稅階計算 ----------
+// brackets 格式：[[上限, 稅率], ...]，最後一級上限用 Infinity
+function progressiveTax(taxable, brackets){
+  if (taxable <= 0) return 0;
+  let tax = 0, lower = 0;
+  for (const [cap, rate] of brackets){
+    if (taxable > lower){
+      tax += (Math.min(taxable, cap) - lower) * rate;
+      lower = cap;
+    } else break;
+  }
+  return tax;
+}
+
+// ---------- 2026 聯邦稅階（Single）----------
+const FED_BRACKETS = [
+  [12400, 0.10],
+  [50400, 0.12],
+  [105700, 0.22],
+  [201775, 0.24],
+  [256225, 0.32],
+  [640600, 0.35],
+  [Infinity, 0.37]
+];
+const FED_STD_DEDUCTION = 16100;
+
+// ---------- FICA（2026）----------
+const SS_RATE = 0.062;
+const SS_WAGE_BASE = 184500;           // 2026 Social Security 應課稅上限
+const MEDICARE_RATE = 0.0145;
+const ADDL_MEDICARE_RATE = 0.009;
+const ADDL_MEDICARE_THRESHOLD = 200000; // Single，唔跟通脹調整
+
+// ---------- 401(k)（2026）----------
+const K401_LIMIT = 24500;
+
+// ---------- 州稅設定 ----------
+const STATES = {
+  NY: {
+    name: '紐約', abbr: 'NY',
+    stdDeduction: 8000,
+    // 2026 稅年（FY2026 預算：頭五級各減 0.1%）
+    brackets: [
+      [8500, 0.039],
+      [11700, 0.044],
+      [13900, 0.0515],
+      [80650, 0.054],
+      [215400, 0.059],
+      [1077550, 0.0685],
+      [5000000, 0.0965],
+      [25000000, 0.103],
+      [Infinity, 0.109]
+    ],
+    // NY Paid Family Leave（2026）：糧總額 0.432%，年度上限 $411.91
+    // 注意：PFL 係 after-tax 扣，唔會降低應課稅收入
+    pflRate: 0.00432,
+    pflCap: 411.91,
+    // NY Disability（DBL）：每週 $0.60 上限，即全年最多 $31.20
+    dblAnnualCap: 31.20
+  },
+  NJ: {
+    name: '新澤西', abbr: 'NJ',
+    stdDeduction: 1000,   // NJ 冇標準扣除額，呢個係 personal exemption
+    brackets: [
+      [20000, 0.014],
+      [35000, 0.0175],
+      [40000, 0.035],
+      [75000, 0.05525],
+      [500000, 0.0637],
+      [1000000, 0.0897],
+      [Infinity, 0.1075]
+    ]
+  },
+  CA: {
+    name: '加州', abbr: 'CA',
+    stdDeduction: 5706,   // 2025 FTB 官方數字
+    // 2025 稅年稅階（2026 未公佈，用作近似）
+    brackets: [
+      [10756, 0.01],
+      [25499, 0.02],
+      [40245, 0.04],
+      [55866, 0.06],
+      [70606, 0.08],
+      [360659, 0.093],
+      [432787, 0.103],
+      [721314, 0.113],
+      [Infinity, 0.123]
+    ],
+    mhstThreshold: 1000000, // Mental Health Services Tax：應課稅收入 $1M 以上加 1%
+    mhstRate: 0.01,
+    sdiRate: 0.012          // CA SDI 1.2%（2024 年起無上限；2025 費率）
+  },
+  TX: { name: '德州', abbr: 'TX', noTax: true },
+  WA: { name: '華盛頓州', abbr: 'WA', noTax: true },
+  MA: {
+    name: '麻省', abbr: 'MA',
+    // MA 冇標準扣除額，用 $4,400 personal exemption（Single）代替
+    stdDeduction: 4400,
+    // MA 係 flat 5%；應課稅收入超過 $1,107,750（2026）部分加 4% surtax（合共 9%）
+    brackets: [
+      [1107750, 0.05],
+      [Infinity, 0.09]
+    ],
+    // MA PFML 僱員供款：0.46%（大公司僱員最高比例），
+    // 基數上限跟 Social Security wage base（2026: $184,500）
+    pfmlRate: 0.0046
+  },
+  FL: { name: '佛羅里達', abbr: 'FL', noTax: true }
+};
+
+/* ---------- 核心計算 ----------
+   輸入：gross 年薪、k401Pct（0–100）、healthMonthly、stateCode、inNYC
+   輸出：逐項扣除 + 每月實收                                     */
+function calc(gross, k401Pct, healthMonthly, stateCode, inNYC){
+  const st = STATES[stateCode];
+
+  // 401(k)：按百分比計，2026 年上限 $24,500 封頂
+  const k401Raw = gross * (k401Pct / 100);
+  const k401 = Math.min(k401Raw, K401_LIMIT);
+  const k401Capped = k401Raw > K401_LIMIT;
+
+  // 醫療保費（年度），pre-tax，不能超過年薪
+  const health = Math.min(healthMonthly * 12, gross);
+
+  // FICA 工資基數 = 年薪 - pre-tax 醫保（401k 唔減 FICA）
+  const ficaWages = Math.max(0, gross - health);
+  const ss = SS_RATE * Math.min(ficaWages, SS_WAGE_BASE);
+  const medicare = MEDICARE_RATE * ficaWages
+    + ADDL_MEDICARE_RATE * Math.max(0, ficaWages - ADDL_MEDICARE_THRESHOLD);
+
+  // 聯邦應課稅收入 = 年薪 - 401k - 醫保 - 標準扣除額
+  const fedTaxable = Math.max(0, gross - k401 - health - FED_STD_DEDUCTION);
+  const fedTax = progressiveTax(fedTaxable, FED_BRACKETS);
+
+  // 州稅
+  let stateTax = 0, cityTax = 0, sdi = 0, pfl = 0, dbl = 0, pfml = 0;
+  if (!st.noTax){
+    const stTaxable = Math.max(0, gross - k401 - health - st.stdDeduction);
+    stateTax = progressiveTax(stTaxable, st.brackets);
+    // 加州 Mental Health Services Tax（$1M 以上 +1%）
+    if (st.mhstThreshold && stTaxable > st.mhstThreshold){
+      stateTax += (stTaxable - st.mhstThreshold) * st.mhstRate;
+    }
+    // 加州 SDI（工資扣除，非所得稅，但糧單上會見到）
+    if (st.sdiRate){
+      sdi = st.sdiRate * ficaWages;
+    }
+    // NY Paid Family Leave：用糧總額計（糧單實際做法），年度封頂
+    if (st.pflRate){
+      pfl = Math.min(st.pflRate * gross, st.pflCap);
+    }
+    // NY Disability（DBL）：0.5% 週薪，每週上限 $0.60 → 全年最多 $31.20
+    if (st.dblAnnualCap){
+      dbl = Math.min(gross * 0.005, st.dblAnnualCap);
+    }
+    // MA PFML 僱員供款：基數上限跟 SS wage base
+    if (st.pfmlRate){
+      pfml = st.pfmlRate * Math.min(ficaWages, SS_WAGE_BASE);
+    }
+    // 紐約市稅（用州應課稅收入作近似基數）
+    if (stateCode === 'NY' && inNYC){
+      cityTax = progressiveTax(stTaxable, [
+        [12000, 0.03078],
+        [25000, 0.03762],
+        [50000, 0.03819],
+        [Infinity, 0.03876]
+      ]);
+    }
+  }
+
+  const totalTax = fedTax + stateTax + cityTax + ss + medicare + sdi + pfl + dbl + pfml;
+  const netAnnual = gross - totalTax - k401 - health;
+
+  return {
+    gross, k401, k401Capped, health,
+    fedTax, stateTax, cityTax, ss, medicare, sdi, pfl, dbl, pfml,
+    totalTax,
+    effRate: gross > 0 ? totalTax / gross : 0,  // 有效稅率 = 稅項合共 ÷ 稅前年薪
+    netAnnual,
+    netMonthly: netAnnual / 12
+  };
+}
+
+/* ============================================================
+   UI 邏輯
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const fmt0 = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtM = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtPct = n => (n * 100).toFixed(1) + '%';
+
+let selected = ['NY', 'CA', 'TX'];  // 預設對比：NY vs CA vs TX
+
+function getInputs(){
+  const gross = Math.max(0, parseFloat($('salary').value) || 0);
+  const k401Pct = Math.min(100, Math.max(0, parseFloat($('k401').value) || 0));
+  const health = Math.max(0, parseFloat($('health').value) || 0);
+  const inNYC = $('nycCheck').checked;
+  return { gross, k401Pct, health, inNYC };
+}
+
+// 扣除項 row HTML
+function rowHTML(nameZh, nameEn, monthly, pctOfGross, cls){
+  return `<div class="row ${cls || ''}">
+    <span class="nm">${nameZh}<span class="en">${nameEn}</span></span>
+    <span class="pct">${pctOfGross}</span>
+    <span class="amt">−${fmtM(monthly)}/月</span>
+  </div>`;
+}
+
+function render(){
+  const { gross, k401Pct, health, inNYC } = getInputs();
+
+  // NYC checkbox 只喺揀咗 NY 時顯示
+  $('nycRow').classList.toggle('hidden', !selected.includes('NY'));
+
+  // chip note
+  const note = $('chipNote');
+  if (selected.length >= 3){
+    note.textContent = '已揀 3 個州。想換第個，先㩒走一個。';
+    note.classList.add('warn');
+  } else if (selected.length === 0){
+    note.textContent = '揀最少 1 個州先計到。';
+    note.classList.add('warn');
+  } else {
+    note.textContent = `已揀 ${selected.length} 個州，仲可以加 ${3 - selected.length} 個。`;
+    note.classList.remove('warn');
+  }
+
+  const strip = $('compareStrip');
+  const cards = $('cards');
+  const cmpHint = $('cmpHint');
+  strip.innerHTML = '';
+  cards.innerHTML = '';
+  cmpHint.textContent = '';
+
+  if (selected.length === 0 || gross <= 0){
+    cards.innerHTML = '<div class="panel" style="text-align:center;color:var(--ink-soft);font-size:14px;">輸入年薪同揀州份，結果即刻出。</div>';
+    return;
+  }
+
+  // 計晒所有揀咗嘅州
+  const results = selected.map(code => ({ code, r: calc(gross, k401Pct, health, code, inNYC) }));
+  const maxNet = Math.max(...results.map(x => x.r.netMonthly));
+  const minNet = Math.min(...results.map(x => x.r.netMonthly));
+
+  // ---------- 對比條（2 個州以上先顯示） ----------
+  if (results.length >= 2){
+    strip.style.setProperty('--cols', results.length);
+    results.forEach(({ code, r }) => {
+      const isBest = r.netMonthly === maxNet && maxNet !== minNet;
+      const diff = r.netMonthly - maxNet;
+      const label = code === 'NY' && inNYC ? 'NY+NYC' : STATES[code].abbr;
+      strip.insertAdjacentHTML('beforeend', `
+        <div class="cmp-cell ${isBest ? 'best' : ''}">
+          <div class="st">${STATES[code].name}<br><span style="font-family:var(--mono);font-size:10px;">${label}</span></div>
+          <div class="amt">${fmtM(r.netMonthly)}</div>
+          <div class="diff">${isBest ? '實收最高' : (maxNet === minNet ? '' : '−' + fmtM(Math.abs(diff)) + '/月')}</div>
+        </div>`);
+    });
+    if (maxNet !== minNet){
+      cmpHint.textContent = `同一份 ${fmt0(gross)} 年薪，最高同最低實收每月差 ${fmtM(maxNet - minNet)}，一年即係 ${fmt0((maxNet - minNet) * 12)}。`;
+    }
+  }
+
+  // ---------- 州結果卡 ----------
+  results.forEach(({ code, r }) => {
+    const st = STATES[code];
+    const isBest = results.length >= 2 && r.netMonthly === maxNet && maxNet !== minNet;
+    const nyLabel = code === 'NY' && inNYC ? '（連紐約市稅）' : '';
+
+    let rows = '';
+    rows += `<div class="row section-label">稅項（呢啲先係真係冇咗）</div>`;
+    rows += rowHTML('聯邦所得稅', 'Federal Income Tax', r.fedTax / 12, fmtPct(r.fedTax / gross));
+    if (st.noTax){
+      rows += `<div class="row zero-note"><span class="nm">州所得稅<span class="en">State Income Tax</span></span><span class="amt">$0 ✓</span></div>`;
+    } else {
+      rows += rowHTML('州所得稅', 'State Income Tax', r.stateTax / 12, fmtPct(r.stateTax / gross));
+    }
+    if (r.cityTax > 0){
+      rows += rowHTML('紐約市稅', 'NYC Local Tax', r.cityTax / 12, fmtPct(r.cityTax / gross));
+    }
+    rows += rowHTML('社會保障稅', 'Social Security (OASDI) 6.2%', r.ss / 12, fmtPct(r.ss / gross));
+    rows += rowHTML('醫療保險稅', 'Medicare 1.45%+', r.medicare / 12, fmtPct(r.medicare / gross));
+    if (r.sdi > 0){
+      rows += rowHTML('加州傷殘保險', 'CA SDI 1.2%', r.sdi / 12, fmtPct(r.sdi / gross));
+    }
+    if (r.pfl > 0){
+      rows += rowHTML('紐約家事假供款', 'NY Paid Family Leave 0.432%', r.pfl / 12, fmtPct(r.pfl / gross));
+    }
+    if (r.dbl > 0){
+      rows += rowHTML('紐約傷殘保險', 'NY Disability (DBL)', r.dbl / 12, fmtPct(r.dbl / gross));
+    }
+    if (r.pfml > 0){
+      rows += rowHTML('麻省家事醫療假供款', 'MA PFML 0.46%', r.pfml / 12, fmtPct(r.pfml / gross));
+    }
+
+    if (r.k401 > 0 || r.health > 0){
+      rows += `<div class="row section-label">其他扣除（唔係稅）</div>`;
+      if (r.k401 > 0){
+        rows += rowHTML('401(k) 供款（你自己嘅資產）' + (r.k401Capped ? ' · 已封頂 $24,500' : ''), '401(k) — pre-tax', r.k401 / 12, fmtPct(r.k401 / gross), 'asset');
+      }
+      if (r.health > 0){
+        rows += rowHTML('醫療保費', 'Health Insurance — pre-tax', r.health / 12, fmtPct(r.health / gross));
+      }
+    }
+
+    const tagText = isBest ? '實收最高' : (st.noTax ? '無州稅' : '');
+    const tagHTML = tagText ? `<span class="tag ${isBest ? 'best-tag' : ''}">${tagText}</span>` : '';
+    cards.insertAdjacentHTML('beforeend', `
+      <article class="state-card">
+        <div class="sc-head">
+          <div class="sc-state">
+            <span class="name">${st.name} ${st.abbr}${nyLabel}</span>
+            ${tagHTML}
+          </div>
+          <p class="sc-net-label">你嘅稅後每月實收</p>
+          <div class="sc-net">${fmtM(r.netMonthly)}<span class="per"> /月</span></div>
+          <p class="sc-net-yr">全年實收 ${fmt0(r.netAnnual)}${r.k401 > 0 ? '（另有 401k ' + fmt0(r.k401) + ' 喺你退休戶口）' : ''}</p>
+        </div>
+        <div class="sc-body">${rows}</div>
+        <div class="sc-total">
+          <span class="item"><span class="lb">稅項合共</span><b>${fmt0(r.totalTax)}/年</b></span>
+          <span class="item"><span class="lb">有效稅率</span><b>${fmtPct(r.effRate)}</b></span>
+        </div>
+      </article>`);
+  });
+}
+
+// ---------- 州份 chips：最多揀 3 個 ----------
+$('stateChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const code = chip.dataset.st;
+  const idx = selected.indexOf(code);
+  if (idx >= 0){
+    selected.splice(idx, 1);
+    chip.classList.remove('on');
+  } else {
+    if (selected.length >= 3){
+      // 已滿 3 個：輕微提示，唔自動踢走
+      $('chipNote').textContent = '最多對比 3 個州，先㩒走一個再加。';
+      $('chipNote').classList.add('warn');
+      return;
+    }
+    selected.push(code);
+    chip.classList.add('on');
+  }
+  render();
+});
+
+// ---------- 輸入即時重算 ----------
+['salary', 'k401', 'health'].forEach(id => $(id).addEventListener('input', render));
+$('nycCheck').addEventListener('change', render);
+
+render();
+</script>
+</body>
+</html>
